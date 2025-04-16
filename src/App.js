@@ -143,9 +143,9 @@ export default function ProposalGame() {
       content: "He pensado mucho en esto y estoy completamente seguro de lo que quiero. Quiero que seas la persona con quien comparta todos mis días, mis sueños y mis locuras."
     },
     {
-      title: "Mi corazón late solo por ti...",
-      content: "Desde que llegaste a mi vida, todo tiene más color. Eres mi mejor amiga, mi confidente, mi persona favorita en el mundo entero."
-    }
+      "title": "Mi corazón late solo por ti",
+      "content": "Desde que llegaste a mi vida, todo se ha llenado de color y alegría. Eres mi mejor amiga, mi confidente y la persona más especial del mundo. Como te dije una vez, eres una hermosa anomalía: no te esperaba, pero ahora que estás a mi lado, no puedo imaginar mi vida sin ti."
+    }    
   ], []);
   
   // Initialize memory game
