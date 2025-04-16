@@ -15,11 +15,10 @@ export default function ProposalGame() {
   const [showCredentials, setShowCredentials] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [showVolumeControl, setShowVolumeControl] = useState(false);
+  const [showMusicButton, setShowMusicButton] = useState(false);
+  const [selectedSong, setSelectedSong] = useState(null);
   const typingRef = useRef(null);
   const audioRef = useRef(null);
-  
-  // Song selection state
-  const [selectedSong, setSelectedSong] = useState(null);
   
   // Memory game state
   const [flipped, setFlipped] = useState([]);
@@ -35,8 +34,12 @@ export default function ProposalGame() {
   // Message screens state
   const [currentMessageScreen, setCurrentMessageScreen] = useState(0);
   
+  // Pre-proposal state
+  const [currentPreProposalScreen, setCurrentPreProposalScreen] = useState(0);
+  
   // Final proposal state
   const [proposalAnimationComplete, setProposalAnimationComplete] = useState(false);
+  const [transitionStage, setTransitionStage] = useState(false);
   
   // Background effects
   const [hearts, setHearts] = useState([]);
@@ -64,7 +67,7 @@ export default function ProposalGame() {
     }
   ], []);
   
-  // Memory game cards - replace with your shared memories
+  // Memory game cards
   const memoryItems = useMemo(() => [
     { id: 1, content: '❤️', match: 1 },
     { id: 2, content: '❤️', match: 1 },
@@ -80,12 +83,12 @@ export default function ProposalGame() {
     { id: 12, content: '🍕', match: 6 },
   ], []);
   
-  // Questions - customize these with your own related to your relationship
+  // Questions
   const questions = useMemo(() => [
     {
       question: "¿Dónde nos conocimos?",
       options: ["En una fiesta", "En la universidad", "Por amigos", "En el colegio"],
-      correctAnswer: 3 // Índice de la respuesta correcta (0-based)
+      correctAnswer: 3
     },
     {
       question: "¿Cuál era nuestro bobba favorito?",
@@ -105,11 +108,11 @@ export default function ProposalGame() {
     {
       question: "¿Cual era nuestra frase de amors?",
       options: ["Forever and ever", "Para siempre y un poco mas", "Nos amaremos hasta en sueños", "Siempre juntos"],
-      correctAnswer: 1 // Cambiar por el correcto
+      correctAnswer: 1
     }
   ], []);
   
-  // Message screens content - personalize these!
+  // Message screens content
   const messageScreens = useMemo(() => [
     {
       title: "Has llegado hasta aquí...",
@@ -127,7 +130,23 @@ export default function ProposalGame() {
       title: "Un último paso...",
       content: "Has transformado mi vida de maneras que jamás imaginé. A tu lado, cada instante cobra sentido, y solo deseo seguir construyendo recuerdos juntos. Ahora estoy listo para hacerte una pregunta muy especial..."
     }
-  ], []); 
+  ], []);
+
+  // Pre-proposal screens
+  const preProposalScreens = useMemo(() => [
+    {
+      title: "Antes de hacerte mi pregunta...",
+      content: "Quiero que sepas que no hay nadie más con quien me gustaría compartir mi vida. Eres la persona que hace que cada día valga la pena."
+    },
+    {
+      title: "Esto no es algo que diga a la ligera...",
+      content: "He pensado mucho en esto y estoy completamente seguro de lo que quiero. Quiero que seas la persona con quien comparta todos mis días, mis sueños y mis locuras."
+    },
+    {
+      title: "Mi corazón late solo por ti...",
+      content: "Desde que llegaste a mi vida, todo tiene más color. Eres mi mejor amiga, mi confidente, mi persona favorita en el mundo entero."
+    }
+  ], []);
   
   // Initialize memory game
   useEffect(() => {
@@ -138,7 +157,6 @@ export default function ProposalGame() {
   
   // Initialize background animations
   useEffect(() => {
-    // Create animated hearts for background
     const newHearts = [];
     for (let i = 0; i < 20; i++) {
       newHearts.push({
@@ -153,7 +171,6 @@ export default function ProposalGame() {
     }
     setHearts(newHearts);
     
-    // Create animated stars for background
     const newStars = [];
     for (let i = 0; i < 25; i++) {
       newStars.push({
@@ -195,8 +212,6 @@ export default function ProposalGame() {
       audioRef.current.pause();
     }
     
-    // In a real implementation, you would use the actual audio URL
-    // For this example, we're creating a new Audio element
     const audio = new Audio(song.url);
     audio.loop = true;
     audio.volume = volume;
@@ -204,6 +219,7 @@ export default function ProposalGame() {
     
     audioRef.current = audio;
     setSelectedSong(songId);
+    setShowMusicButton(false);
   };
   
   // Handle volume change
@@ -243,31 +259,61 @@ export default function ProposalGame() {
     }
   }, [stage, currentMessageScreen, messageScreens]);
 
-  // Proposal animation - ahora sin efecto de latido
+  // Pre-proposal typing effect
   useEffect(() => {
-    if (stage === 'proposal') {
-      // Start with empty text and animate it in
-      setTypingText('');
+    if (stage === 'pre-proposal') {
+      const currentMessage = preProposalScreens[currentPreProposalScreen].content;
       let index = 0;
-      const proposalText = "¿Quieres ser mi novia?";
+      setTypingText('');
+      setShowNextButton(false);
       
-      const typeProposal = () => {
-        if (index < proposalText.length) {
-          setTypingText(proposalText.substring(0, index + 1));
+      clearTimeout(typingRef.current);
+      
+      const typeNextCharacter = () => {
+        if (index < currentMessage.length) {
+          setTypingText(currentMessage.substring(0, index + 1));
           index++;
-          typingRef.current = setTimeout(typeProposal, 80); // Slower for dramatic effect
+          typingRef.current = setTimeout(typeNextCharacter, 30);
         } else {
-          setTimeout(() => {
-            setProposalAnimationComplete(true);
-          }, 500);
+          setShowNextButton(true);
         }
       };
       
-      setTimeout(typeProposal, 1000);
+      typeNextCharacter();
       
       return () => {
         clearTimeout(typingRef.current);
       };
+    }
+  }, [stage, currentPreProposalScreen, preProposalScreens]);
+
+  // Proposal animation
+  useEffect(() => {
+    if (stage === 'proposal') {
+      setTypingText('');
+      setTransitionStage(true);
+      
+      setTimeout(() => {
+        let index = 0;
+        const proposalText = "¿¿Quieres ser mi novia?";
+        
+        const typeProposal = () => {
+          if (index < proposalText.length) {
+            setTypingText(prev => prev + proposalText.charAt(index));
+            index++;
+            typingRef.current = setTimeout(typeProposal, 80);
+          } else {
+            setTimeout(() => {
+              setProposalAnimationComplete(true);
+            }, 500);
+          }
+        };
+        
+        setTypingText('');
+        typeProposal();
+      }, 300);
+      
+      return () => clearTimeout(typingRef.current);
     }
   }, [stage]);
   
@@ -310,7 +356,6 @@ export default function ProposalGame() {
       }
     }
     
-    // Check if game completed
     if (matched.length + 2 === memoryCards.length) {
       setTimeout(() => {
         completeStage('memory');
@@ -320,7 +365,7 @@ export default function ProposalGame() {
   
   // Handle question answers
   const handleAnswer = (questionIndex, answerIndex) => {
-    if (showFeedback) return; // Prevent multiple selections during feedback
+    if (showFeedback) return;
     
     setAnswers(prev => ({ ...prev, [questionIndex]: answerIndex }));
     setShowFeedback(true);
@@ -342,7 +387,6 @@ export default function ProposalGame() {
   const completeStage = (stageName) => {
     setCompleted([...completed, stageName]);
     
-    // Determine next stage
     if (stageName === 'start') {
       setStage('memory');
     } else if (stageName === 'memory') {
@@ -356,8 +400,17 @@ export default function ProposalGame() {
         setCurrentMessageScreen(currentMessageScreen + 1);
         setShowNextButton(false);
       } else {
+        setStage('pre-proposal');
+        setCurrentPreProposalScreen(0);
+      }
+    } else if (stageName === 'pre-proposal') {
+      if (currentPreProposalScreen < preProposalScreens.length - 1) {
+        setCurrentPreProposalScreen(currentPreProposalScreen + 1);
+        setShowNextButton(false);
+      } else {
         setStage('proposal');
         setProposalAnimationComplete(false);
+        setTransitionStage(false);
       }
     }
   };
@@ -365,6 +418,11 @@ export default function ProposalGame() {
   // Handle next message button
   const handleNextMessage = () => {
     completeStage('message');
+  };
+  
+  // Handle next pre-proposal screen
+  const handleNextPreProposal = () => {
+    completeStage('pre-proposal');
   };
   
   // Trigger confetti explosion
@@ -386,7 +444,6 @@ export default function ProposalGame() {
 
       const particleCount = 50 * (timeLeft / duration);
       
-      // Since particles fall down, start a bit higher than random
       confetti({
         ...defaults,
         particleCount,
@@ -403,13 +460,14 @@ export default function ProposalGame() {
   // Handle proposal response
   const handleResponse = (isYes) => {
     if (isYes) {
-      // Show confetti animation
       triggerConfetti();
-      
-      // Show credentials dialog
       setShowCredentials(true);
     } else {
-      // Improved feedback
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setShowMusicButton(true);
       alert("¡Tómate tu tiempo para pensarlo! Estaré esperando tu respuesta... ❤️");
     }
   };
@@ -523,7 +581,7 @@ export default function ProposalGame() {
       case 'message':
         const currentMessage = messageScreens[currentMessageScreen];
         return (
-          <div className="flex flex-col items-center justify-center p-6 text-center">
+          <div className={`flex flex-col items-center justify-center p-6 text-center transition-opacity duration-500 ${transitionStage ? 'opacity-0' : 'opacity-100'}`}>
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-md relative overflow-hidden">
               {hearts.slice(0, 5).map((heart, i) => (
                 <Heart
@@ -552,9 +610,41 @@ export default function ProposalGame() {
           </div>
         );
       
+      case 'pre-proposal':
+        const currentPreProposal = preProposalScreens[currentPreProposalScreen];
+        return (
+          <div className={`flex flex-col items-center justify-center p-6 text-center transition-opacity duration-500 ${transitionStage ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-md relative overflow-hidden">
+              {hearts.slice(0, 5).map((heart, i) => (
+                <Heart
+                  key={`heart-decoration-${i}`}
+                  className="absolute text-rose-200"
+                  style={{
+                    left: `${10 + i * 20}%`,
+                    top: i % 2 === 0 ? '10%' : '85%',
+                    width: `${heart.size/2}px`,
+                    height: `${heart.size/2}px`,
+                    opacity: heart.opacity - 0.1,
+                  }}
+                />
+              ))}
+              <h2 className="text-2xl font-bold mb-4 text-rose-600">{currentPreProposal.title}</h2>
+              <p className="text-lg mb-6">{typingText}<span className={`animate-pulse ${showNextButton ? 'hidden' : 'inline'}`}>|</span></p>
+              {showNextButton && (
+                <button 
+                  onClick={handleNextPreProposal}
+                  className="mt-4 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 px-6 rounded-full text-lg flex items-center mx-auto transition-all duration-300 transform hover:scale-105"
+                >
+                  {currentPreProposalScreen < preProposalScreens.length - 1 ? 'Continuar' : 'Ver mi pregunta'} <ChevronRight className="ml-1" size={18} />
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      
       case 'proposal':
         return (
-          <div className="flex flex-col items-center justify-center p-4 text-center relative min-h-[400px]">
+          <div className={`flex flex-col items-center justify-center p-4 text-center relative min-h-[400px] transition-opacity duration-300 ${transitionStage ? 'opacity-100' : 'opacity-0'}`}>
             {/* Background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               {hearts.map(heart => (
@@ -589,8 +679,7 @@ export default function ProposalGame() {
             
             <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-6 max-w-sm w-full relative z-10 backdrop-blur">
               <div className="flex flex-col items-center justify-center min-h-[300px]">
-                {/* Se eliminó el efecto animate-pulse del título */}
-                <h1 className="text-4xl font-bold text-rose-600 mb-6">
+                <h1 className="text-4xl font-bold text-rose-600 mb-6 min-h-[60px] flex items-center justify-center">
                   {typingText}
                   <span className={`animate-pulse ${proposalAnimationComplete ? 'hidden' : 'inline'}`}>|</span>
                 </h1>
@@ -613,6 +702,36 @@ export default function ProposalGame() {
                 )}
               </div>
             </div>
+            
+            {/* Music selector when "Necesito pensarlo" is clicked */}
+            {showMusicButton && (
+              <div className="mt-4 w-full max-w-sm bg-white bg-opacity-80 rounded-lg p-4 backdrop-blur-sm">
+                <h3 className="text-lg font-semibold mb-3 text-rose-500">¿Quieres cambiar la música mientras lo piensas?</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {songs.map(song => (
+                    <button
+                      key={song.id}
+                      onClick={() => playSong(song.id)}
+                      className={`flex items-center justify-between p-2 rounded-lg border transition-all duration-300 
+                        ${selectedSong === song.id 
+                          ? 'bg-rose-50 border-rose-500' 
+                          : 'bg-white border-gray-200 hover:border-rose-300'}`}
+                    >
+                      <div className="flex items-center">
+                        <Music className={`mr-2 ${selectedSong === song.id ? 'text-rose-500' : 'text-gray-400'}`} size={16} />
+                        <div className="text-left">
+                          <p className="text-sm font-medium">{song.title}</p>
+                          <p className="text-xs text-gray-500">{song.artist}</p>
+                        </div>
+                      </div>
+                      {selectedSong === song.id && (
+                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Credentials dialog */}
             {showCredentials && (
@@ -658,14 +777,14 @@ export default function ProposalGame() {
         <div className="bg-white p-2 shadow-sm w-full">
           <div className="flex justify-center gap-2 max-w-sm mx-auto">
             <div className={`h-2 flex-1 rounded-full ${completed.includes('start') || stage !== 'start' ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
-            <div className={`h-2 flex-1 rounded-full ${completed.includes('memory') || stage === 'message' ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
-            <div className={`h-2 flex-1 rounded-full ${completed.includes('quiz') ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
-            <div className={`h-2 flex-1 rounded-full ${completed.includes('message') ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded-full ${completed.includes('memory') || stage === 'message' || stage === 'quiz' || stage === 'pre-proposal' ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded-full ${completed.includes('quiz') || stage === 'message' || stage === 'pre-proposal' ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded-full ${completed.includes('message') || stage === 'pre-proposal' ? 'bg-rose-500' : 'bg-gray-200'}`}></div>
           </div>
         </div>
       )}
       
-      {/* Volume control - siempre visible */}
+      {/* Volume control */}
       <div className="fixed top-8 right-8 z-50">
         <div 
           className="bg-white bg-opacity-80 rounded-full p-2 shadow-md cursor-pointer flex items-center"
