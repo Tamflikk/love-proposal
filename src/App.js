@@ -127,14 +127,14 @@ export default function ProposalGame() {
       title: "Un último paso...",
       content: "Has transformado mi vida de maneras que jamás imaginé. A tu lado, cada instante cobra sentido, y solo deseo seguir construyendo recuerdos juntos. Ahora estoy listo para hacerte una pregunta muy especial..."
     }
-  ];  
+  ]; 
   
   // Initialize memory game
   useEffect(() => {
     if (stage === 'memory') {
       setMemoryCards(shuffleArray([...memoryItems]));
     }
-  }, [stage]);
+  }, [stage, memoryItems]); // Added memoryItems as dependency
   
   // Initialize background animations
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function ProposalGame() {
         clearTimeout(typingRef.current);
       };
     }
-  }, [stage, currentMessageScreen]);
+  }, [stage, currentMessageScreen, messageScreens]); // Added messageScreens as dependency
 
   // Proposal animation - ahora sin efecto de latido
   useEffect(() => {
