@@ -13,7 +13,7 @@ export default function ProposalGame() {
   const [typingText, setTypingText] = useState('');
   const [showNextButton, setShowNextButton] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
-  const [volume, setVolume] = useState(0.7);
+  const [volume, setVolume] = useState(0.5);
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [showMusicButton, setShowMusicButton] = useState(false);
   const [selectedSong, setSelectedSong] = useState(null);
