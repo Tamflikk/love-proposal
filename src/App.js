@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Heart, Star, Music, ArrowRight, ChevronRight, Volume2 } from 'lucide-react';
 import CredentialsDialog from './dialogs/CredentialDialogs';
 import confetti from 'canvas-confetti';
@@ -43,7 +43,7 @@ export default function ProposalGame() {
   const [stars, setStars] = useState([]);
 
   // Songs available for selection
-  const songs = [
+  const songs = useMemo(() => [
     { 
       id: 'desencuentro', 
       title: 'Desencuentro', 
@@ -62,10 +62,10 @@ export default function ProposalGame() {
       artist: 'Residente & Jessie Reyez', 
       url: Encuentro 
     }
-  ];
+  ], []);
   
   // Memory game cards - replace with your shared memories
-  const memoryItems = [
+  const memoryItems = useMemo(() => [
     { id: 1, content: '❤️', match: 1 },
     { id: 2, content: '❤️', match: 1 },
     { id: 3, content: '🌟', match: 2 },
@@ -78,10 +78,10 @@ export default function ProposalGame() {
     { id: 10, content: '🌹', match: 5 },
     { id: 11, content: '🍕', match: 6 },
     { id: 12, content: '🍕', match: 6 },
-  ];
+  ], []);
   
   // Questions - customize these with your own related to your relationship
-  const questions = [
+  const questions = useMemo(() => [
     {
       question: "¿Dónde nos conocimos?",
       options: ["En una fiesta", "En la universidad", "Por amigos", "En el colegio"],
@@ -107,10 +107,10 @@ export default function ProposalGame() {
       options: ["Forever and ever", "Para siempre y un poco mas", "Nos amaremos hasta en sueños", "Siempre juntos"],
       correctAnswer: 1 // Cambiar por el correcto
     }
-  ];
+  ], []);
   
   // Message screens content - personalize these!
-  const messageScreens = [
+  const messageScreens = useMemo(() => [
     {
       title: "Has llegado hasta aquí...",
       content: "Desde que te conocí, cada día tiene un brillo distinto. Hay algo que llevo tiempo queriendo decirte, pero esperé el momento perfecto para expresarlo de una forma especial."
@@ -127,14 +127,14 @@ export default function ProposalGame() {
       title: "Un último paso...",
       content: "Has transformado mi vida de maneras que jamás imaginé. A tu lado, cada instante cobra sentido, y solo deseo seguir construyendo recuerdos juntos. Ahora estoy listo para hacerte una pregunta muy especial..."
     }
-  ]; 
+  ], []); 
   
   // Initialize memory game
   useEffect(() => {
     if (stage === 'memory') {
       setMemoryCards(shuffleArray([...memoryItems]));
     }
-  }, [stage, memoryItems]); // Added memoryItems as dependency
+  }, [stage, memoryItems]);
   
   // Initialize background animations
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function ProposalGame() {
         clearTimeout(typingRef.current);
       };
     }
-  }, [stage, currentMessageScreen, messageScreens]); // Added messageScreens as dependency
+  }, [stage, currentMessageScreen, messageScreens]);
 
   // Proposal animation - ahora sin efecto de latido
   useEffect(() => {
